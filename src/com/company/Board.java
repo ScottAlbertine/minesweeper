@@ -75,10 +75,6 @@ public class Board {
 		return ((x < 0) || (x >= xSize) || (y < 0) || (y >= ySize)) ? null : tiles[x][y];
 	}
 
-	public Tile[][] getTiles() {
-		return tiles;
-	}
-
 	public int getTilesRemaining() {
 		return (int) Arrays.stream(tiles).flatMap(Arrays::stream).filter(Tile::isBlank).count();
 	}

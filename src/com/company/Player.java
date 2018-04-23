@@ -1,9 +1,12 @@
 package com.company;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * @author Scott Albertine
@@ -11,24 +14,22 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"JavaDoc", "UseOfSystemOutOrSystemErr", "BooleanMethodNameMustStartWithQuestion"})
 public class Player {
 
-	private static final long MAX_LAYOUTS = 5000000L;
-
 	private final Board board;
+	private final ThreadPoolExecutor pool = Utils.getMainPool();
 
 	public Player(Board board) {
 		this.board = board;
 	}
 
-	public void go() throws InterruptedException {
+	public void go() throws InterruptedException, ExecutionException {
 		//click on a random tile to start
 		board.getRandomTile().click();
 		while (!board.findBorder().isEmpty()) {
 			System.out.println(board);
-			//Thread.sleep(100L);
+			Thread.sleep(20L);
 			if (trySureClick()) {
 				continue;
 			}
-
 			tryRiskyClick();
 		}
 	}
@@ -55,7 +56,7 @@ public class Player {
 		return false;
 	}
 
-	private void tryRiskyClick() {
+	private void tryRiskyClick() throws ExecutionException, InterruptedException {
 		//get the list of tiles we actually want to look at, aka, the list of sane moves
 		List<Tile> border = board.findBorder();
 
@@ -67,37 +68,26 @@ public class Player {
 					  .filter(Tile::isShowingNumber)
 					  .collect(Collectors.toSet());
 
-
 		//TODO: cap this by the number of mines left
-		//iterate through all layouts of bomb/no bomb for the border (maybe trim this by number of bombs left?)
 		int length = border.size();
-		long totalPossibleLayouts = (long) Math.pow(2L, length);
-		boolean exhaustive = true;
-		if (totalPossibleLayouts > MAX_LAYOUTS) {
-			totalPossibleLayouts = MAX_LAYOUTS;
-			exhaustive = false;
-		}
+		System.out.println("difficulty: " + length);
+		//fancy way to create a populated array of atomic longs initialized to 0
+		AtomicLong[] scores = LongStream.range(0, length)
+										.mapToObj((long i) -> new AtomicLong(0))
+										.toArray(AtomicLong[]::new);
+		pool.submit(new SolveJob(board, border, neighborsToCheck, new Boolean[length], 0, scores, pool));
 
-		System.out.println("total possible layouts: " + totalPossibleLayouts);
-
-		int[] scores = new int[length];
-		for (int layoutNum = 0; layoutNum < totalPossibleLayouts; layoutNum++) {
-			boolean[] layout = exhaustive ? Utils.bitfield(layoutNum, length)
-										  : Utils.randomBitfield(length);
-			setupPossibilityCheck(border, layout);
-			if (isPossible(neighborsToCheck)) {
-				for (int i = 0; i < length; i++) {
-					if (layout[i]) {
-						scores[i] += 1;
-					}
-				}
-			}
+		//put a tracer through the pool, repeatedly, so we don't busywait on the pool being empty
+		//remember, there's always going to be 1 active count here, it's me, the tracer thread.
+		while (!pool.submit(() -> (pool.getActiveCount() == 1) && pool.getQueue().isEmpty()).get()) {
+			//this is neat, we don't need a body here at all.
+			//System.out.println("pool queue size: " + pool.getQueue().size());
 		}
 
 		Tile lowestChanceTile = border.get(0);
-		int lowestChance = scores[0];
+		long lowestChance = scores[0].get();
 		for (int i = 0; i < length; i++) {
-			int score = scores[i];
+			long score = scores[i].get();
 			if (score < lowestChance) {
 				lowestChance = score;
 				lowestChanceTile = border.get(i);
@@ -106,7 +96,7 @@ public class Player {
 
 		//check if the lowest chance tile is better than a random other tile
 		double guessRatio = getGuessRatio();
-		double borderRisk = (double) lowestChance / totalPossibleLayouts;
+		double borderRisk = lowestChance / Math.pow(2, length);
 		System.out.println("lowest border risk: " + borderRisk);
 		System.out.println("guessing would be: " + guessRatio);
 		if (borderRisk > guessRatio) {
@@ -126,28 +116,6 @@ public class Player {
 
 	private double getGuessRatio() {
 		return (double) board.mineCount / board.getTilesRemaining();
-	}
-
-	private void setupPossibilityCheck(List<Tile> border, boolean... layout) {
-		//TODO: this could be a board method?
-		Arrays.stream(board.getTiles()).flatMap(Arrays::stream).forEach(Tile::clearTempState);
-
-		for (int i = 0; i < border.size(); i++) {
-			if (layout[i]) {
-				border.get(i).tempFlag();
-			}
-		}
-	}
-
-	private static boolean isPossible(Iterable<Tile> neighborsToCheck) {
-		for (Tile neighbor : neighborsToCheck) {
-			int expectedBombs = neighbor.getNumber();
-			long bombs = neighbor.neighbors.stream().filter(Tile::isTempFlagged).count();
-			if (bombs != expectedBombs) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 }

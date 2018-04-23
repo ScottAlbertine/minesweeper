@@ -18,9 +18,6 @@ public class Tile {
 	private int num;
 	private boolean hasBomb;
 
-	//TODO: refactor this out so we can go parallel
-	private TileState tempState;
-
 	public Tile(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -62,8 +59,13 @@ public class Tile {
 		}
 		state = NUMBER;
 		//click all neighboring blank tiles if you're a zero, cause there's no bomb danger
+		//TODO: this causes stack overflows on large, sparsely populated maps, handle that.
 		if (num == 0) {
-			neighbors.stream().filter(Tile::isBlank).forEach(Tile::click);
+			for (Tile neighbor : neighbors) {
+				if (neighbor.isBlank()) {
+					neighbor.click();
+				}
+			}
 		}
 	}
 
@@ -99,23 +101,11 @@ public class Tile {
 		return neighbors;
 	}
 
-	public void clearTempState() {
-		tempState = state;
-	}
-
-	public boolean isTempFlagged() {
-		return tempState == FLAG;
-	}
-
-	public void tempFlag() {
-		tempState = FLAG;
-	}
-
 	@Override
 	public String toString() {
 		switch (state) {
 			case BLANK:
-				return "_";
+				return " ";
 			case FLAG:
 				return "F";
 			case NUMBER:
