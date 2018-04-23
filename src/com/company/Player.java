@@ -34,9 +34,7 @@ public class Player {
 	}
 
 	private boolean trySureClick() {
-		List<Tile> border = board.findBorder();
-		//TODO: this can be a cool streamy thing
-		for (Tile tile : border) {
+		for (Tile tile : board.findBorder()) {
 			for (Tile neighbor : tile.neighbors) {
 				if (neighbor.isShowingNumber()) {
 					int num = neighbor.getNumber();
