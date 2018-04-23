@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,7 +132,7 @@ public class Player {
 
 	private void setupPossibilityCheck(List<Tile> border, boolean... layout) {
 		//TODO: this could be a board method?
-		board.getTiles().stream().flatMap(List::stream).forEach(Tile::clearTempState);
+		Arrays.stream(board.getTiles()).flatMap(Arrays::stream).forEach(Tile::clearTempState);
 
 		for (int i = 0; i < border.size(); i++) {
 			if (layout[i]) {
