@@ -11,13 +11,18 @@ public enum Main {
 		int ySize = Integer.parseInt(args[1]);
 		int mineCount = Integer.parseInt(args[2]);
     	int wins = 0;
+		int losses = 0;
     	while (true) {
-    		Board mainBoard = new Board(xSize, ySize, mineCount);
-    		Player player = new Player(mainBoard);
-    		player.go();
-    		wins++;
-    		System.out.println(mainBoard);
-    		System.out.println("wins: " + wins);
+    		try {
+				Board mainBoard = new Board(xSize, ySize, mineCount);
+				Player player = new Player(mainBoard);
+				player.go();
+				wins++;
+				System.out.println(mainBoard);
+			} catch (DeadException e) {
+				losses++;
+			}
+			System.out.println("win/loss: " + ((float) wins / losses));
         }
     }
 }

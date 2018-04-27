@@ -47,7 +47,7 @@ public class Tile {
 	public void flag() {
 		if (!hasBomb) {
 			System.out.println("false flag on " + x + ',' + y);
-			Runtime.getRuntime().exit(0);
+			throw new DeadException();
 		}
 		state = FLAG;
 	}
@@ -55,7 +55,7 @@ public class Tile {
 	public void click() {
 		if (hasBomb) {
 			System.out.println("You died when you clicked on " + x + ',' + y);
-			Runtime.getRuntime().exit(0);
+			throw new DeadException();
 		}
 		state = NUMBER;
 		//click all neighboring blank tiles if you're a zero, cause there's no bomb danger

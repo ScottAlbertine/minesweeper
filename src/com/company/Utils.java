@@ -12,10 +12,8 @@ import java.util.concurrent.TimeUnit;
 public enum Utils {
 	;
 
-	public static ThreadPoolExecutor getMainPool() {
-		int nThreads = Runtime.getRuntime().availableProcessors();
-		return new ThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-	}
+	public static final int N_THREADS = Runtime.getRuntime().availableProcessors();
+	public static final ThreadPoolExecutor MAIN_POOL = new ThreadPoolExecutor(N_THREADS, N_THREADS, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
 
 	/**
 	 * Picks one random item from an array.

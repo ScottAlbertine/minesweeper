@@ -15,7 +15,7 @@ import java.util.stream.LongStream;
 public class Player {
 
 	private final Board board;
-	private final ThreadPoolExecutor pool = Utils.getMainPool();
+	private final ThreadPoolExecutor pool = Utils.MAIN_POOL;
 
 	public Player(Board board) {
 		this.board = board;
@@ -98,7 +98,7 @@ public class Player {
 		}
 
 		//check if the lowest chance tile is better than a random other tile
-		double guessRatio = getGuessRatio();
+		double guessRatio = (double) board.mineCount / board.getTilesRemaining();
 		double borderRisk = lowestChance / Math.pow(2, length);
 		System.out.println("lowest border risk: " + borderRisk);
 		System.out.println("guessing would be: " + guessRatio);
@@ -115,10 +115,6 @@ public class Player {
 		}
 		//click on the lowest chance tile if we haven't already clicked on this time
 		lowestChanceTile.click();
-	}
-
-	private double getGuessRatio() {
-		return (double) board.mineCount / board.getTilesRemaining();
 	}
 
 }
