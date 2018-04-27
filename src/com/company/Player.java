@@ -31,6 +31,7 @@ public class Player {
 				continue;
 			}
 			tryRiskyClick();
+			Thread.sleep(1000L);
 		}
 	}
 
@@ -79,10 +80,12 @@ public class Player {
 
 		//put a tracer through the pool, repeatedly, so we don't busywait on the pool being empty
 		//remember, there's always going to be 1 active count here, it's me, the tracer thread.
+		System.out.print("pool queue size:");
 		while (!pool.submit(() -> (pool.getActiveCount() == 1) && pool.getQueue().isEmpty()).get()) {
 			//this is neat, we don't need a body here at all.
-			//System.out.println("pool queue size: " + pool.getQueue().size());
+			System.out.print(" " + pool.getQueue().size());
 		}
+		System.out.println();
 
 		Tile lowestChanceTile = border.get(0);
 		long lowestChance = scores[0].get();

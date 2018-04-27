@@ -1,6 +1,8 @@
 package com.company;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,13 +43,13 @@ public class Board {
 				int x = tile.x;
 				int y = tile.y;
 				tile.neighbors = Stream.of(getTile(x - 1, y - 1),
-										   getTile(x - 1, y),
-										   getTile(x - 1, y + 1),
 										   getTile(x, y - 1),
-										   getTile(x, y + 1),
 										   getTile(x + 1, y - 1),
 										   getTile(x + 1, y),
-										   getTile(x + 1, y + 1))
+										   getTile(x + 1, y + 1),
+										   getTile(x - 1, y),
+										   getTile(x - 1, y + 1),
+										   getTile(x, y + 1))
 									   .filter(Objects::nonNull)
 									   .collect(Collectors.toList());
 			}
