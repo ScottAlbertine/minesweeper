@@ -75,7 +75,7 @@ public class Player {
 		AtomicLong[] scores = LongStream.range(0, length)
 										.mapToObj((long i) -> new AtomicLong(0))
 										.toArray(AtomicLong[]::new);
-		pool.submit(new SolveJob(board, border, neighborsToCheck, new Boolean[length], 0, scores, pool));
+		pool.submit(new SolveJob(border, neighborsToCheck, new Boolean[length], 0, scores, pool));
 
 		//put a tracer through the pool, repeatedly, so we don't busywait on the pool being empty
 		//remember, there's always going to be 1 active count here, it's me, the tracer thread.

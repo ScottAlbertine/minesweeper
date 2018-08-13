@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SolveJob implements Runnable {
 
-	private final Board board;
 	private final List<Tile> border;
 	private final Set<Tile> neighborsToCheck;
 	private final Boolean[] layout;
@@ -18,14 +17,12 @@ public class SolveJob implements Runnable {
 	private final AtomicLong[] scores;
 	private final ExecutorService pool;
 
-	public SolveJob(Board board,
-					List<Tile> border,
+	public SolveJob(List<Tile> border,
 					Set<Tile> neighborsToCheck,
 					Boolean[] layout,
 					int movePosition,
 					AtomicLong[] scores,
 					ExecutorService pool) {
-		this.board = board;
 		this.border = border;
 		this.neighborsToCheck = neighborsToCheck;
 		this.layout = layout;
@@ -56,8 +53,8 @@ public class SolveJob implements Runnable {
 		System.arraycopy(layout, 0, layout2, 0, movePosition);
 		layout1[movePosition] = true;
 		layout2[movePosition] = false;
-		pool.submit(new SolveJob(board, border, neighborsToCheck, layout1, movePosition + 1, scores, pool));
-		pool.submit(new SolveJob(board, border, neighborsToCheck, layout2, movePosition + 1, scores, pool));
+		pool.submit(new SolveJob(border, neighborsToCheck, layout1, movePosition + 1, scores, pool));
+		pool.submit(new SolveJob(border, neighborsToCheck, layout2, movePosition + 1, scores, pool));
 	}
 
 	private boolean isPossible() {
