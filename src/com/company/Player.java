@@ -27,19 +27,24 @@ public class Player {
 	public void go() throws InterruptedException, ExecutionException {
 		//click on a random tile to start
 		board.getRandomTile().click();
-		while (!board.findBorder().isEmpty()) {
+		while (true) {
 			System.out.println(board);
 			Thread.sleep(20L);
-			if (trySureClick()) {
+			//get the list of tiles we actually want to look at, aka, the list of sane moves
+			List<Tile> border = board.findBorder();
+			if (border.isEmpty()) {
+				break;
+			}
+			if (trySureClick(border)) {
 				continue;
 			}
-			tryRiskyClick();
+			tryRiskyClick(border);
 			Thread.sleep(1000L);
 		}
 	}
 
-	private boolean trySureClick() {
-		for (Tile tile : board.findBorder()) {
+	private boolean trySureClick(Iterable<Tile> border) {
+		for (Tile tile : border) {
 			for (Tile neighbor : tile.neighbors) {
 				if (neighbor.isShowingNumber()) {
 					int num = neighbor.getNumber();
@@ -60,11 +65,8 @@ public class Player {
 		return false;
 	}
 
-	private void tryRiskyClick() throws ExecutionException, InterruptedException {
-		//get the list of tiles we actually want to look at, aka, the list of sane moves
-		List<Tile> border = board.findBorder();
-
-		//Get the list of their neighbors that we actually want to check for sanity, when we try a layout
+	private void tryRiskyClick(List<Tile> border) throws ExecutionException, InterruptedException {
+		//Get the list of neighbors that we actually want to check for sanity, when we try a layout
 		Set<Tile> neighborsToCheck =
 				border.stream()
 					  .map(Tile::getNeighbors)
