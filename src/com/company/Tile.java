@@ -10,7 +10,6 @@ import static com.company.TileState.*;
 @SuppressWarnings({"JavaDoc", "FieldNotUsedInToString", "UseOfSystemOutOrSystemErr", "CallToSystemExit", "NumericCastThatLosesPrecision"})
 public class Tile {
 	public List<Tile> neighbors;
-	//TODO: if this becomes memory heavy, get rid of them, they're only used in printing
 	public int x;
 	public int y;
 

@@ -69,7 +69,6 @@ public class Player {
 					  .filter(Tile::isShowingNumber)
 					  .collect(Collectors.toSet());
 
-		//TODO: cap this by the number of mines left
 		int length = border.size();
 		System.out.println("difficulty: " + length);
 		//fancy way to create a populated array of atomic longs initialized to 0
