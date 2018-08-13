@@ -1,11 +1,14 @@
 package com.company;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**
@@ -71,11 +74,15 @@ public class Player {
 
 		int length = border.size();
 		System.out.println("difficulty: " + length);
+		//an inverse array, which makes it easy to go from item -> index, rather than index -> item
+		Map<Tile, Integer> inverseBorder = IntStream.range(0, length)
+													.boxed()
+													.collect(Collectors.toMap(border::get, Function.identity()));
 		//fancy way to create a populated array of atomic longs initialized to 0
 		AtomicLong[] scores = LongStream.range(0, length)
 										.mapToObj((long i) -> new AtomicLong(0))
 										.toArray(AtomicLong[]::new);
-		pool.submit(new SolveJob(border, neighborsToCheck, new Boolean[length], 0, scores, pool));
+		pool.submit(new SolveJob(inverseBorder, neighborsToCheck, new Boolean[length], 0, scores, pool));
 
 		//put a tracer through the pool, repeatedly, so we don't busywait on the pool being empty
 		//remember, there's always going to be 1 active count here, it's me, the tracer thread.

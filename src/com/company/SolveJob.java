@@ -1,6 +1,6 @@
 package com.company;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -10,27 +10,26 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SolveJob implements Runnable {
 
-	private final List<Tile> border;
+	private final Map<Tile, Integer> inverseBorder;
 	private final Set<Tile> neighborsToCheck;
 	private final Boolean[] layout;
 	private final int movePosition; //should start at 0, indicates the index of the first null item in the layout
 	private final AtomicLong[] scores;
 	private final ExecutorService pool;
 
-	public SolveJob(List<Tile> border,
+	public SolveJob(Map<Tile, Integer> inverseBorder,
 					Set<Tile> neighborsToCheck,
 					Boolean[] layout,
 					int movePosition,
 					AtomicLong[] scores,
 					ExecutorService pool) {
-		this.border = border;
+		this.inverseBorder = inverseBorder;
 		this.neighborsToCheck = neighborsToCheck;
 		this.layout = layout;
 		this.movePosition = movePosition;
 		this.scores = scores;
 		this.pool = pool;
 	}
-
 
 	public void run() {
 		if (!isPossible()) {
@@ -53,8 +52,8 @@ public class SolveJob implements Runnable {
 		System.arraycopy(layout, 0, layout2, 0, movePosition);
 		layout1[movePosition] = true;
 		layout2[movePosition] = false;
-		pool.submit(new SolveJob(border, neighborsToCheck, layout1, movePosition + 1, scores, pool));
-		pool.submit(new SolveJob(border, neighborsToCheck, layout2, movePosition + 1, scores, pool));
+		pool.submit(new SolveJob(inverseBorder, neighborsToCheck, layout1, movePosition + 1, scores, pool));
+		pool.submit(new SolveJob(inverseBorder, neighborsToCheck, layout2, movePosition + 1, scores, pool));
 	}
 
 	private boolean isPossible() {
@@ -68,9 +67,8 @@ public class SolveJob implements Runnable {
 				} else if (doubleNeighbor.isShowingNumber()) {
 					maxBombs--;
 				} else {
-					//TODO: this could be faster if we used a hashmap, not sure if we care
-					int i = border.indexOf(doubleNeighbor);
-					if (i > 0) {
+					Integer i = inverseBorder.get(doubleNeighbor);
+					if (i != null) {
 						Boolean tempFlag = layout[i];
 						if (tempFlag != null) {
 							if (tempFlag) {
