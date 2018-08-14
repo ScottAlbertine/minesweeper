@@ -10,11 +10,11 @@ public enum Main {
 		int xSize = Integer.parseInt(args[0]);
 		int ySize = Integer.parseInt(args[1]);
 		int mineCount = Integer.parseInt(args[2]);
-    	int wins = 0;
+		int wins = 0;
 		int losses = 0;
 		Renderer renderer = new Renderer();
-    	while (true) {
-    		try {
+		while (true) {
+			try {
 				Board mainBoard = new Board(xSize, ySize, mineCount);
 				renderer.setBoard(mainBoard);
 				Player player = new Player(mainBoard);
@@ -25,6 +25,6 @@ public enum Main {
 				losses++;
 			}
 			System.out.println("win/loss: " + ((float) wins / losses));
-        }
-    }
+		}
+	}
 }
