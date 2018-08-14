@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,34 +96,31 @@ public class Player {
 		}
 		System.out.println();
 
+		System.out.println("Scores: " + Arrays.stream(scores)
+											  .map(AtomicLong::get)
+											  .map(Object::toString)
+											  .collect(Collectors.joining(" ")));
+
+		boolean unClicked = true;
 		Tile lowestChanceTile = border.get(0);
 		long lowestChance = scores[0].get();
 		for (int i = 0; i < length; i++) {
 			long score = scores[i].get();
+			//click on all 0 chance tiles while we're in here, for speed's sake
+			if (score == 0L) {
+				border.get(i).click();
+				unClicked = false;
+				continue;
+			}
 			if (score < lowestChance) {
 				lowestChance = score;
 				lowestChanceTile = border.get(i);
 			}
 		}
 
-		//check if the lowest chance tile is better than a random other tile
-		double guessRatio = (double) board.mineCount / board.getTilesRemaining();
-		double borderRisk = lowestChance / Math.pow(2, length);
-		System.out.println("lowest border risk: " + borderRisk);
-		System.out.println("guessing would be: " + guessRatio);
-		if (borderRisk > guessRatio) {
-			//make a random guess
-			while (true) {
-				Tile tile = board.getRandomTile();
-				//yes, this is O(n), but n here is suuuuper small compared to elsewhere
-				if (tile.isBlank() && !border.contains(tile)) {
-					tile.click();
-					return;
-				}
-			}
+		if (unClicked) { //click on the lowest chance tile if we haven't already clicked on this turn
+			lowestChanceTile.click();
 		}
-		//click on the lowest chance tile if we haven't already clicked on this time
-		lowestChanceTile.click();
 	}
 
 }
