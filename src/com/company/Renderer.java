@@ -1,14 +1,17 @@
 package com.company;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferStrategy;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Scott Albertine
  */
-public class Renderer implements Runnable {
+public class Renderer {
 
 	private final Frame window = new Frame("Minesweeper");
 	private final int initialW = 1024;
@@ -19,35 +22,16 @@ public class Renderer implements Runnable {
 	private int tileXSize;
 	private int tileYSize;
 	private Board board;
-	private AtomicBoolean displaying = new AtomicBoolean(false);
-	private AtomicBoolean needsWipe = new AtomicBoolean(true);
+	private final AtomicBoolean displaying = new AtomicBoolean(false);
+	private final AtomicBoolean needsWipe = new AtomicBoolean(true);
 
 	public Renderer() {
 		window.setBounds(0, 0, initialW, initialH);
 		window.setVisible(true);
 		window.addWindowListener(new SaneWindowAdapter());
-		new Thread(this).start(); //start the run() method in our own thread
-	}
-
-	public void run() {
-		while (true) {
-			long start = System.currentTimeMillis();
-			if (displaying.get()) {
-				if (needsWipe.get()) {
-					wipe();
-				}
-				render(); //assumes we have at least one frame per board, which if we don't, the fuck're we doing anyway?
-			}
-			long end = System.currentTimeMillis();
-			try {
-				long dur = end - start;
-				if (dur < 16L) {
-					Thread.sleep(16L - dur); //60 fps
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		window.setIgnoreRepaint(true); //we'll repaint this manually, thanks
+		window.createBufferStrategy(2); //with double buffering
+		new Timer(16, this::render).start(); //render at 60fps
 	}
 
 	public void setBoard(Board board) {
@@ -57,29 +41,33 @@ public class Renderer implements Runnable {
 		displaying.set(true);
 	}
 
-	private void wipe() {
-		Graphics g = window.getGraphics();
-		Rectangle bounds = window.getBounds();
-		g.setColor(Color.white);
-		g.fillRect(0, 0, bounds.width, bounds.height);
-		needsWipe.set(false);
-	}
+	private void render(ActionEvent e) {
+		if (!displaying.get()) {
+			return; //we're off, do nothing
+		}
 
-	private void render() {
 		Rectangle bounds = window.getBounds();
 		int w = bounds.width;
 		int h = bounds.height;
 
 		//wipe on resize
 		if ((w != lastW) || (h != lastH)) {
-			wipe(); //we're already rendering and thus are in the appropriate thread to wipe
 			lastW = w;
 			lastH = h;
 			tileXSize = w / board.xSize;
 			tileYSize = h / board.ySize;
+			needsWipe.set(true); //we're already rendering and thus are in the appropriate thread to wipe
 		}
 
-		Graphics g = window.getGraphics();
+		BufferStrategy strategy = window.getBufferStrategy();
+		Graphics g = strategy.getDrawGraphics();
+
+		if (needsWipe.get()) {
+			g.setColor(Color.white);
+			g.fillRect(0, 0, w, h);
+			needsWipe.set(false);
+		}
+
 		for (Tile[] row : board.tiles) {
 			for (Tile tile : row) {
 				if (tile.isFlag()) {
@@ -92,6 +80,10 @@ public class Renderer implements Runnable {
 				g.fillRect(tile.x * tileXSize, tile.y * tileYSize, tileXSize, tileYSize);
 			}
 		}
+
+		g.dispose(); //be kind, dispose of our graphics object when we're done with it
+		strategy.show(); //swap the buffer in
+		Toolkit.getDefaultToolkit().sync(); //and show it
 	}
 
 	private static class SaneWindowAdapter extends WindowAdapter {
