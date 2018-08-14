@@ -27,11 +27,8 @@ public class Player {
 	}
 
 	public void go() throws InterruptedException, ExecutionException {
-		//click on a random tile to start
-		board.getRandomTile().click();
+		board.getRandomTile().click(); //click on a random tile to start
 		while (true) {
-			System.out.println(board);
-			Thread.sleep(20L);
 			//get the list of tiles we actually want to look at, aka, the list of sane moves
 			List<Tile> border = board.findBorder();
 			if (border.isEmpty()) {
@@ -41,7 +38,6 @@ public class Player {
 				continue;
 			}
 			tryRiskyClick(border);
-			Thread.sleep(1000L);
 		}
 	}
 

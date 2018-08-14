@@ -13,9 +13,9 @@ import static com.company.Utils.pickOne;
  */
 @SuppressWarnings({"JavaDoc", "FieldNotUsedInToString", "HardcodedLineSeparator", "NumericCastThatLosesPrecision"})
 public class Board {
-	private final Tile[][] tiles;
-	private final int xSize;
-	private final int ySize;
+	public final Tile[][] tiles;
+	public final int xSize;
+	public final int ySize;
 	public int mineCount;
 
 	public Board(int xSize, int ySize, int mineCount) {

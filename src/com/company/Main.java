@@ -12,13 +12,15 @@ public enum Main {
 		int mineCount = Integer.parseInt(args[2]);
     	int wins = 0;
 		int losses = 0;
+		Renderer renderer = new Renderer();
     	while (true) {
     		try {
 				Board mainBoard = new Board(xSize, ySize, mineCount);
+				renderer.setBoard(mainBoard);
 				Player player = new Player(mainBoard);
 				player.go();
 				wins++;
-				System.out.println(mainBoard);
+				Thread.sleep(1000L);
 			} catch (DeadException e) {
 				losses++;
 			}
