@@ -70,7 +70,7 @@ public class Player {
 	private void tryRiskyClick(List<Tile> border) throws ExecutionException, InterruptedException {
 		//Get the list of neighbors that we actually want to check for sanity, when we try a layout
 		Set<Tile> neighborsToCheck =
-				border.stream()
+				border.parallelStream()
 					  .map(Tile::getNeighbors)
 					  .flatMap(List::stream)
 					  .filter(Tile::isShowingNumber)
@@ -80,10 +80,12 @@ public class Player {
 		System.out.println("difficulty: " + length);
 		//an inverse array, which makes it easy to go from item -> index, rather than index -> item
 		Map<Tile, Integer> inverseBorder = IntStream.range(0, length)
+													.parallel()
 													.boxed()
 													.collect(Collectors.toMap(border::get, Function.identity()));
 		//fancy way to create a populated array of atomic longs initialized to 0
 		AtomicLong[] scores = LongStream.range(0, length)
+										.parallel()
 										.mapToObj((long i) -> new AtomicLong(0))
 										.toArray(AtomicLong[]::new);
 		pool.submit(new SolveJob(inverseBorder, neighborsToCheck, BLANK_LAYOUT, scores, pool));

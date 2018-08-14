@@ -37,23 +37,25 @@ public class Board {
 		}
 	}
 
+	private Stream<Tile> getTiles() {
+		return Arrays.stream(tiles).parallel().flatMap(Arrays::stream);
+	}
+
 	private void makeNeighborGraph() {
-		for (Tile[] row : tiles) {
-			for (Tile tile : row) {
-				int x = tile.x;
-				int y = tile.y;
-				tile.neighbors = Stream.of(getTile(x - 1, y - 1),
-										   getTile(x, y - 1),
-										   getTile(x + 1, y - 1),
-										   getTile(x + 1, y),
-										   getTile(x + 1, y + 1),
-										   getTile(x - 1, y),
-										   getTile(x - 1, y + 1),
-										   getTile(x, y + 1))
-									   .filter(Objects::nonNull)
-									   .collect(Collectors.toList());
-			}
-		}
+		getTiles().forEach((Tile tile) -> {
+			int x = tile.x;
+			int y = tile.y;
+			tile.neighbors = Stream.of(getTile(x - 1, y - 1),
+									   getTile(x, y - 1),
+									   getTile(x + 1, y - 1),
+									   getTile(x + 1, y),
+									   getTile(x + 1, y + 1),
+									   getTile(x - 1, y),
+									   getTile(x - 1, y + 1),
+									   getTile(x, y + 1))
+								   .filter(Objects::nonNull)
+								   .collect(Collectors.toList());
+		});
 	}
 
 	private void addBombs() {
@@ -66,7 +68,7 @@ public class Board {
 	}
 
 	private void calculateTileCounts() {
-		Arrays.stream(tiles).flatMap(Arrays::stream).forEach(Tile::calculateCount);
+		getTiles().forEach(Tile::calculateCount);
 	}
 
 	public Tile getRandomTile() {
@@ -78,16 +80,16 @@ public class Board {
 	}
 
 	public int getTilesRemaining() {
-		return (int) Arrays.stream(tiles).flatMap(Arrays::stream).filter(Tile::isBlank).count();
+		return (int) getTiles().filter(Tile::isBlank).count();
 	}
 
 	public List<Tile> findBorder() {
-		return Arrays.stream(tiles).flatMap(Arrays::stream).filter(Tile::isBorder).collect(Collectors.toList());
+		return getTiles().filter(Tile::isBorder).collect(Collectors.toList());
 	}
 
 	@Override
 	public String toString() {
-		return Arrays.stream(tiles).map(Board::rowToString).collect(Collectors.joining("\n", "", "\n"));
+		return Arrays.stream(tiles).parallel().map(Board::rowToString).collect(Collectors.joining("\n", "", "\n"));
 	}
 
 	private static String rowToString(Tile... row) {
