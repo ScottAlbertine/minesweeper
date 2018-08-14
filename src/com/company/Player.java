@@ -17,6 +17,8 @@ import java.util.stream.LongStream;
 @SuppressWarnings({"JavaDoc", "UseOfSystemOutOrSystemErr", "BooleanMethodNameMustStartWithQuestion"})
 public class Player {
 
+	private static final Boolean[] BLANK_LAYOUT = new Boolean[0];
+
 	private final Board board;
 	private final ThreadPoolExecutor pool = Utils.MAIN_POOL;
 
@@ -84,7 +86,7 @@ public class Player {
 		AtomicLong[] scores = LongStream.range(0, length)
 										.mapToObj((long i) -> new AtomicLong(0))
 										.toArray(AtomicLong[]::new);
-		pool.submit(new SolveJob(inverseBorder, neighborsToCheck, new Boolean[length], 0, scores, pool));
+		pool.submit(new SolveJob(inverseBorder, neighborsToCheck, BLANK_LAYOUT, scores, pool));
 
 		//put a tracer through the pool, repeatedly, so we don't busywait on the pool being empty
 		//remember, there's always going to be 1 active count here, it's me, the tracer thread.
