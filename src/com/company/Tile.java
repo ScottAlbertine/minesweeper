@@ -14,6 +14,7 @@ public class Tile {
 	public List<Tile> neighbors;
 	public int x;
 	public int y;
+	public boolean drawn;
 
 	private TileState state;
 	private int num;

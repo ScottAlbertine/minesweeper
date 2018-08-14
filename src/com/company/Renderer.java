@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -65,11 +66,15 @@ public class Renderer {
 		if (needsWipe.get()) {
 			g.setColor(Color.white);
 			g.fillRect(0, 0, w, h);
+			Arrays.stream(board.tiles).flatMap(Arrays::stream).forEach((Tile tile) -> tile.drawn = false);
 			needsWipe.set(false);
 		}
 
 		for (Tile[] row : board.tiles) {
 			for (Tile tile : row) {
+				if (tile.drawn) {
+					continue;
+				}
 				if (tile.isFlag()) {
 					g.setColor(Color.black);
 				} else if (tile.isShowingNumber()) {
@@ -78,6 +83,7 @@ public class Renderer {
 					continue;
 				}
 				g.fillRect(tile.x * tileXSize, tile.y * tileYSize, tileXSize, tileYSize);
+				tile.drawn = true;
 			}
 		}
 
