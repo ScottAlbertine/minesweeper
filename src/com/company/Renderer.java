@@ -31,14 +31,19 @@ public class Renderer implements Runnable {
 
 	public void run() {
 		while (true) {
+			long start = System.currentTimeMillis();
 			if (displaying.get()) {
 				if (needsWipe.get()) {
 					wipe();
 				}
 				render(); //assumes we have at least one frame per board, which if we don't, the fuck're we doing anyway?
 			}
+			long end = System.currentTimeMillis();
 			try {
-				Thread.sleep(16L); //60 fps
+				long dur = end - start;
+				if (dur < 16L) {
+					Thread.sleep(16L - dur); //60 fps
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -74,7 +79,6 @@ public class Renderer implements Runnable {
 			tileYSize = h / board.ySize;
 		}
 
-		//TODO: see what happens if we parallelize this call? probably makes our render thread wayyy too heavy
 		Graphics g = window.getGraphics();
 		for (Tile[] row : board.tiles) {
 			for (Tile tile : row) {
