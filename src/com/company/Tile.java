@@ -1,5 +1,7 @@
 package com.company;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 import static com.company.TileState.*;
@@ -50,19 +52,29 @@ public class Tile {
 		}
 		state = FLAG;
 	}
-
-	public void click() {
+	private void nonRecursiveClick() {
 		if (hasBomb) {
 			System.out.println("You died when you clicked on " + x + ',' + y);
 			throw new DeadException();
 		}
 		state = NUMBER;
-		//click all neighboring blank tiles if you're a zero, cause there's no bomb danger
-		//TODO: this causes stack overflows on large, sparsely populated maps, handle that.
-		if (num == 0) {
-			for (Tile neighbor : neighbors) {
-				if (neighbor.isBlank()) {
-					neighbor.click();
+	}
+
+	public void click() {
+		nonRecursiveClick();
+		if (num == 0) { //click all neighboring blank tiles if you're a zero, cause there's no bomb danger
+			//have to manually replace the program stack, as we overflow on the default stack size when working with giant empty maps
+			Deque<Tile> stack = new LinkedList<>();
+			stack.push(this);
+			while (!stack.isEmpty()) {
+				Tile tile = stack.pop();
+				for (Tile neighbor : tile.neighbors) {
+					if (neighbor.isBlank()) {
+						neighbor.nonRecursiveClick();
+						if (neighbor.num == 0) {
+							stack.push(neighbor);
+						}
+					}
 				}
 			}
 		}
